@@ -11,12 +11,25 @@ import meh from "../images/feedback/meh-emoji.svg";
 import crying from "../images/feedback/crying-emoji.svg";
 import { trackEvent } from "../Analytics";
 
-function FeedbackComponent(props: { onClose: () => void; onSubmit: () => void; isModal: boolean }) {
+function FeedbackComponent(props: {
+    onClose?: () => void;
+    onSubmit?: () => void;
+    isModal: boolean;
+    message?: string;
+    initialSize?: number;
+}) {
     const [text, setText] = useState<string>("");
     const [selectedEmoji, setSelectedEmoji] = useState<number | undefined>();
+    const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState<boolean>(false);
 
     const height = props.isModal ? "300px" : "";
 
+    const onClose = () => {
+        if (props.onClose) {
+            props.onClose();
+        }
+        setSelectedEmoji(undefined);
+    };
     const onSubmit = () => {
         if (selectedEmoji) {
             const feedbackObj = {
@@ -28,7 +41,11 @@ function FeedbackComponent(props: { onClose: () => void; onSubmit: () => void; i
             trackEvent("feedback_submitted", feedbackObj);
         }
 
-        props.onSubmit();
+        if (props.onSubmit) {
+            props?.onSubmit();
+        }
+
+        setIsFeedbackSubmitted(true);
     };
 
     const handleClick = (emojiScore: number) => {
@@ -84,7 +101,7 @@ function FeedbackComponent(props: { onClose: () => void; onSubmit: () => void; i
                         </div>
                     </div>
                     <div className="flex justify-end mt-6">
-                        <button className="secondary" onClick={props.onClose}>
+                        <button className="secondary" onClick={onClose}>
                             Cancel
                         </button>
                         <button className="ml-2" onClick={onSubmit}>
@@ -100,8 +117,13 @@ function FeedbackComponent(props: { onClose: () => void; onSubmit: () => void; i
                     <p className="text-center text-lg mb-8 text-gray-500 dark:text-gray-400">
                         We'd love to know what you think!
                     </p>
+                </div>
+            )}
+            {!isFeedbackSubmitted && !selectedEmoji && (
+                <div className="flex flex-col -mx-6 px-6 py-4 border-gray-200 dark:border-gray-800">
+                    <h4 className="text-center text-xl">{props.message}</h4>
 
-                    <div className="flex items-center justify-center w-full space-x-3">{emojiGroup(50)}</div>
+                    <div className="flex items-center justify-center w-full">{emojiGroup(props.initialSize || 50)}</div>
                 </div>
             )}
         </>

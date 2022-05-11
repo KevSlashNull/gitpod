@@ -402,6 +402,10 @@ export default function Menu() {
                                         separator: true,
                                     },
                                     {
+                                        title: "Help",
+                                        link: "https://www.gitpod.io/support",
+                                    },
+                                    {
                                         title: "Logout",
                                         href: gitpodHostUrl.asApiLogout().toString(),
                                     },
