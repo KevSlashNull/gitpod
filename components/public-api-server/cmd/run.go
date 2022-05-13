@@ -29,21 +29,10 @@ func run() *cobra.Command {
 		Short:   "Starts the service",
 		Version: Version,
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Init(ServiceName, Version, true, verbose)
-			logger := log.Log
+			cfg := getConfig()
 
-			logger.WithField("config", flagsToLogFields(cmd.Flags())).Info("Starting with config.")
-
-			gitpodAPI, urlErr := url.Parse(gitpodAPIURL)
-			if urlErr != nil {
-				logger.WithError(urlErr).Fatal("Failed to parse Gitpod API URL.")
-			}
-
-			if err := server.Start(logger, server.Config{
-				GitpodAPI: gitpodAPI,
-				GRPCPort:  grpcPort,
-			}); err != nil {
-				logger.WithError(err).Fatal("Server errored.")
+			if err := server.Start(log.Log, cfg); err != nil {
+				log.WithError(err).Fatal("cannot start server")
 			}
 		},
 	}
@@ -53,14 +42,4 @@ func run() *cobra.Command {
 	cmd.Flags().BoolVar(&verbose, "verbose", false, "Toggle verbose logging (debug level)")
 
 	return cmd
-}
-
-func flagsToLogFields(fs *pflag.FlagSet) logrus.Fields {
-	fields := logrus.Fields{}
-
-	fs.VisitAll(func(f *pflag.Flag) {
-		fields[f.Name] = f.Value
-	})
-
-	return fields
 }

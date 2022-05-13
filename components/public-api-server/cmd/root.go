@@ -19,6 +19,12 @@ var (
 	Version = ""
 )
 
+var rootOpts struct {
+	CfgFile string
+	JsonLog bool
+	Verbose bool
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   ServiceName,
@@ -30,4 +36,27 @@ func Execute() {
 		log.WithError(err).Error("Failed to execute command.")
 		os.Exit(1)
 	}
+}
+
+func init() {
+	rootCmd.PersistentFlags().StringVar(&rootOpts.CfgFile, "config", "", "config file")
+	rootCmd.PersistentFlags().BoolVarP(&rootOpts.JsonLog, "json-log", "j", true, "produce JSON log output on verbose level")
+	rootCmd.PersistentFlags().BoolVarP(&rootOpts.Verbose, "verbose", "v", false, "Enable verbose JSON logging")
+}
+
+func getConfig() *config.Configuration {
+	ctnt, err := os.ReadFile(rootOpts.CfgFile)
+	if err != nil {
+		log.WithError(err).Fatal("cannot read configuration. Maybe missing --config?")
+	}
+
+	var cfg config.Configuration
+	dec := json.NewDecoder(bytes.NewReader(ctnt))
+	dec.DisallowUnknownFields()
+	err = dec.Decode(&cfg)
+	if err != nil {
+		log.WithError(err).Fatal("cannot decode configuration. Maybe missing --config?")
+	}
+
+	return &cfg
 }
