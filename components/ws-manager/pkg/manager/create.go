@@ -255,12 +255,12 @@ func (m *Manager) createPVCForWorkspacePod(startContext *startWorkspaceContext) 
 		},
 	}
 
-	if startContext.VolumeSnapshot.PvcSnapshotVolumeName != "" {
+	if startContext.VolumeSnapshot.VolumeSnapshotName != "" {
 		snapshotApiGroup := "snapshot.storage.k8s.io"
 		PVC.Spec.DataSource = &corev1.TypedLocalObjectReference{
 			APIGroup: &snapshotApiGroup,
 			Kind:     "VolumeSnapshot",
-			Name:     startContext.VolumeSnapshot.PvcSnapshotVolumeName,
+			Name:     startContext.VolumeSnapshot.VolumeSnapshotName,
 		}
 	}
 
@@ -903,10 +903,10 @@ func (m *Manager) newStartWorkspaceContext(ctx context.Context, req *api.StartWo
 		workspaceClassLabel:    clsName,
 	}
 
-	var snapshotVolume workspaceSnapshotVolumeStatus
+	var volumeSnapshot workspaceVolumeSnapshotStatus
 	if req.Spec.VolumeSnapshot != nil {
-		snapshotVolume.PvcSnapshotVolumeName = req.Spec.VolumeSnapshot.SnapshotVolumeName
-		snapshotVolume.PvcSnapshotVolumeHandle = req.Spec.VolumeSnapshot.SnapshotVolumeHandle
+		volumeSnapshot.VolumeSnapshotName = req.Spec.VolumeSnapshot.VolumeSnapshotName
+		volumeSnapshot.VolumeSnapshotHandle = req.Spec.VolumeSnapshot.VolumeSnapshotHandle
 	}
 
 	return &startWorkspaceContext{
@@ -920,7 +920,7 @@ func (m *Manager) newStartWorkspaceContext(ctx context.Context, req *api.StartWo
 		TraceID:        traceID,
 		Headless:       headless,
 		Class:          class,
-		VolumeSnapshot: snapshotVolume,
+		VolumeSnapshot: volumeSnapshot,
 	}, nil
 }
 
