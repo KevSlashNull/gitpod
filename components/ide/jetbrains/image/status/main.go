@@ -16,10 +16,12 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/hashicorp/go-version"
@@ -236,8 +238,16 @@ func run(wsInfo *supervisor.WorkspaceInfoResponse, alias string) {
 	}
 	// Enable host status endpoint
 	cmd.Env = append(cmd.Env, "CWM_HOST_STATUS_OVER_HTTP_TOKEN=gitpod")
-	if err := cmd.Run(); err != nil {
-		log.WithError(err).Error("failed to run")
+
+	if err := cmd.Start(); err != nil {
+		log.WithError(err).Error("failed to start")
+	}
+
+	// Nicely handler SIGTERM sinal
+	go handlerSignal(cmd.Process.Pid, wsInfo.GetCheckoutLocation())
+
+	if err := cmd.Wait(); err != nil {
+		log.WithError(err).Error("failed to wait")
 	}
 	os.Exit(cmd.ProcessState.ExitCode())
 }
@@ -261,6 +271,19 @@ func remoteDevServerCmd(args []string) *exec.Cmd {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	return cmd
+}
+
+func handlerSignal(serverPID int, projectPath string) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	select {
+	case <-sigChan:
+		syscall.Kill(serverPID, syscall.SIGTERM)
+		// cmd := remoteDevServerCmd([]string{"exit", projectPath})
+		// if err := cmd.Run(); err != nil {
+		// 	log.WithError(err).Error("failed to ask to exit")
+		// }
+	}
 }
 
 func configureXmx(alias string) error {

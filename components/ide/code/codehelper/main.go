@@ -108,6 +108,8 @@ func main() {
 
 	// install extensions and run code server with exec
 	args = append(args, os.Args[1:]...)
+	args = append(args, "--enable-remote-auto-shutdown")
+	args = append(args, "--remote-auto-shutdown-without-delay")
 	args = append(args, "--do-not-sync")
 	args = append(args, "--start-server")
 	log.WithField("cost", time.Now().Local().Sub(startTime).Milliseconds()).Info("starting server")
