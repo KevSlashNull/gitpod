@@ -51,7 +51,7 @@ class GitpodTerminalService(private val project: Project) : Disposable {
 
     private fun printWelcomeMessage(widget: ShellTerminalWidget) {
         widget.executeCommand(
-                "clear; echo '\uD83D\uDC4B Welcome to Gitpod!\n" +
+                "clear; echo '\uD83D\uDC4B Welcome to Gitpod [Andrea]!\n" +
                         "\t\t - Start by typing `gp --help` to see what you can do with Gitpod CLI.\n" +
                         "\t\t - Run `gp tasks --help` to learn how to attach and watch tasks defined in .gitpod.yml!\n'; gp tasks attach"
         )

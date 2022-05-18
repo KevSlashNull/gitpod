@@ -23,6 +23,8 @@ import io.gitpod.jetbrains.remote.utils.Retrier.retry
 import io.gitpod.supervisor.api.*
 import io.gitpod.supervisor.api.Info.WorkspaceInfoResponse
 import io.gitpod.supervisor.api.Notification.*
+import io.gitpod.supervisor.api.Status.PortsStatusRequest
+import io.gitpod.supervisor.api.Status.PortsStatusResponse
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.stub.ClientCallStreamObserver
@@ -196,6 +198,53 @@ class GitpodManager : Disposable {
     init {
         lifetime.onTerminationOrNow {
             notificationsJob.cancel()
+        }
+    }
+
+    private val portsObserveJob = GlobalScope.launch {
+        if (application.isHeadlessEnvironment) {
+            return@launch
+        }
+
+        val status = StatusServiceGrpc.newStub(supervisorChannel)
+        while (isActive) {
+            try {
+                val f = CompletableFuture<Void>()
+                status.portsStatus(
+                        PortsStatusRequest.newBuilder().build(),
+                        object: ClientResponseObserver<PortsStatusRequest, PortsStatusResponse> {
+                            override fun beforeStart(requestStream: ClientCallStreamObserver<PortsStatusRequest>) {
+                                // TODO(ak): actually should be bound to cancellation of notifications job
+                                lifetime.onTerminationOrNow {
+                                    requestStream.cancel(null, null)
+                                }
+                            }
+
+                            override fun onNext(p: PortsStatusResponse) {
+                                val notification = notificationGroup.createNotification("andrea test", NotificationType.INFORMATION)
+                                notification.notify(null)
+                            }
+
+                            override fun onError(t: Throwable) {
+                                f.completeExceptionally(t)
+                            }
+
+                            override fun onCompleted() {
+                                f.complete(null)
+                            }
+                        })
+            } catch (t: Throwable) {
+                if (t is CancellationException) {
+                    throw t
+                }
+                thisLogger().error("gitpod: failed to stream ports status: ", t)
+            }
+            delay(1000L)
+        }
+    }
+    init {
+        lifetime.onTerminationOrNow {
+            portsObserveJob.cancel()
         }
     }
 
