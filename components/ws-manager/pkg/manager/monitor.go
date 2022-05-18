@@ -39,7 +39,7 @@ import (
 	"github.com/gitpod-io/gitpod/ws-manager/api"
 	"github.com/gitpod-io/gitpod/ws-manager/pkg/manager/internal/workpool"
 
-	volumesnapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	volumesnapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 )
 
 const (
@@ -1043,31 +1043,29 @@ func (m *Monitor) finalizeWorkspaceContent(ctx context.Context, wso *workspaceOb
 				}
 				deletedPVC = true
 			}
-		} else {
-			if doSnapshot {
-				// if this is a prebuild take a snapshot and mark the workspace
-				var res *wsdaemon.TakeSnapshotResponse
-				res, err = snc.TakeSnapshot(ctx, &wsdaemon.TakeSnapshotRequest{Id: workspaceID})
+		} else if doSnapshot {
+			// if this is a prebuild take a snapshot and mark the workspace
+			var res *wsdaemon.TakeSnapshotResponse
+			res, err = snc.TakeSnapshot(ctx, &wsdaemon.TakeSnapshotRequest{Id: workspaceID})
+			if err != nil {
+				tracing.LogError(span, err)
+				log.WithError(err).Warn("cannot take snapshot")
+				err = xerrors.Errorf("cannot take snapshot: %v", err)
+				err = m.manager.markWorkspace(ctx, workspaceID, addMark(workspaceExplicitFailAnnotation, err.Error()))
+				if err != nil {
+					log.WithError(err).Warn("was unable to mark workspace as failed")
+				}
+			}
+
+			if res != nil {
+				err = m.manager.markWorkspace(context.Background(), workspaceID, addMark(workspaceSnapshotAnnotation, res.Url))
 				if err != nil {
 					tracing.LogError(span, err)
-					log.WithError(err).Warn("cannot take snapshot")
-					err = xerrors.Errorf("cannot take snapshot: %v", err)
+					log.WithError(err).Warn("cannot mark headless workspace with snapshot - that's one prebuild lost")
+					err = xerrors.Errorf("cannot remember snapshot: %v", err)
 					err = m.manager.markWorkspace(ctx, workspaceID, addMark(workspaceExplicitFailAnnotation, err.Error()))
 					if err != nil {
 						log.WithError(err).Warn("was unable to mark workspace as failed")
-					}
-				}
-
-				if res != nil {
-					err = m.manager.markWorkspace(context.Background(), workspaceID, addMark(workspaceSnapshotAnnotation, res.Url))
-					if err != nil {
-						tracing.LogError(span, err)
-						log.WithError(err).Warn("cannot mark headless workspace with snapshot - that's one prebuild lost")
-						err = xerrors.Errorf("cannot remember snapshot: %v", err)
-						err = m.manager.markWorkspace(ctx, workspaceID, addMark(workspaceExplicitFailAnnotation, err.Error()))
-						if err != nil {
-							log.WithError(err).Warn("was unable to mark workspace as failed")
-						}
 					}
 				}
 			}
