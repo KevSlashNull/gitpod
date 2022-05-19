@@ -50,6 +50,10 @@ class GitpodCLIService : RestService() {
                 BrowserUtil.browse(url, project)
             }
         }
+        if (operation == "ping") {
+            sendOk(request, context)
+            return null
+        }
         return "invalid operation"
     }
 

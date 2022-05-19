@@ -5,7 +5,6 @@
 package cmd
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -18,21 +17,17 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	waitUntilBackendPluginIsReady()
+	waitUntilBackendPluginIsAccessible()
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
 }
 
-func waitUntilBackendPluginIsReady() {
+func waitUntilBackendPluginIsAccessible() {
 	for {
-		// We expect the backend plugin API to return "400 Bad Request" as the operation ("op" query parameter) is undefined.
-		resp, httpError := http.Get("http://localhost:63342/api/gitpod/cli")
-		if httpError != nil {
-			log.Fatal(httpError)
-		}
-		if resp.StatusCode == http.StatusBadRequest {
+		resp, httpError := http.Get("http://localhost:63342/api/gitpod/cli?op=ping")
+		if httpError == nil && resp.StatusCode == http.StatusOK {
 			break
 		}
 		time.Sleep(1000)
