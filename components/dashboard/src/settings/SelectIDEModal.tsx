@@ -33,6 +33,7 @@ export default function (props: { onClose?: () => void }) {
     };
 
     return (
+        // TODO: Use title and buttons props
         <Modal visible={visible} onClose={handleContinue} closeable={true} className="_max-w-xl">
             <h3 className="pb-2">Select Editor</h3>
             <div className="border-t border-b border-gray-200 dark:border-gray-800 mt-2 -mx-6 px-6 py-4">
