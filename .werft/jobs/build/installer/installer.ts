@@ -104,18 +104,16 @@ export class Installer {
     }
 
     private configureDomain(slice: string) {
-        this.options.werft.log(slice, "Adding domain configuration");
         exec(`yq w -i ${this.options.installerConfigPath} domain ${this.options.domain}`, { slice: slice });
     }
 
     private configureWorkspaces(slice: string) {
-        this.options.werft.log(slice, "Adding workspaces configuration");
         exec(`yq w -i ${this.options.installerConfigPath} workspace.runtime.containerdRuntimeDir ${CONTAINERD_RUNTIME_DIR}`, { slice: slice });
         exec(`yq w -i ${this.options.installerConfigPath} workspace.resources.requests.cpu "100m"`, { slice: slice });
+        exec(`yq w -i ${this.options.installerConfigPath} workspace.resources.requests.memory "512Mi"`, { slice: slice });
     }
 
     private configureObjectStorage(slice: string) {
-        this.options.werft.log(slice, "Adding object storage configuration");
         exec(`yq w -i ${this.options.installerConfigPath} objectStorage.resources.requests.memory "256Mi"`, { slice: slice });
     }
 
@@ -133,7 +131,6 @@ export class Installer {
     // 'preview-envs-authproviders-harvester' for previews running in Harvester VMs.
     // To understand how it is generated, search for 'auth-provider-secret.yml' in the code.
     private configureAuthProviders(slice: string) {
-        this.options.werft.log(slice, "Configuring auth providers");
         exec(`for row in $(cat auth-provider-secret.yml \
         | base64 -d -w 0 \
         | yq r - authProviders -j \
@@ -185,7 +182,6 @@ export class Installer {
         exec(`/tmp/installer validate cluster --kubeconfig ${this.options.kubeconfigPath} -c ${this.options.installerConfigPath} || true`, { slice: slice });
         this.options.werft.done(slice)
     }
-
 
     render(slice: string): void {
         this.options.werft.log(slice, "Rendering YAML manifests");
