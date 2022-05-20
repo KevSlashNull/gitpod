@@ -73,8 +73,18 @@ function FeedbackComponent(props: {
     };
     return (
         <>
-            <h3 className="mb-4">Send Feedback</h3>
-            {selectedEmoji ? (
+            {props.isModal && <h3 className="mb-4">Send Feedback</h3>}
+            {props.isModal && !selectedEmoji && (
+                <div
+                    className="flex flex-col justify-center -mx-6 px-6 py-4 border-t border-gray-200 dark:border-gray-800"
+                    style={{ height: height }}
+                >
+                    <p className="text-center text-lg mb-8 text-gray-500 dark:text-gray-400">
+                        We'd love to know what you think!
+                    </p>
+                </div>
+            )}
+            {selectedEmoji && !isFeedbackSubmitted && (
                 <>
                     <div className="flex flex-col -mx-6 px-6 py-4 border-t border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
                         <div className="relative">
@@ -109,21 +119,17 @@ function FeedbackComponent(props: {
                         </button>
                     </div>
                 </>
-            ) : (
-                <div
-                    className="flex flex-col justify-center -mx-6 px-6 py-4 border-t border-gray-200 dark:border-gray-800"
-                    style={{ height: height }}
-                >
-                    <p className="text-center text-lg mb-8 text-gray-500 dark:text-gray-400">
-                        We'd love to know what you think!
-                    </p>
-                </div>
             )}
-            {!isFeedbackSubmitted && !selectedEmoji && (
+            {!isFeedbackSubmitted && !selectedEmoji && !props.isModal && (
                 <div className="flex flex-col -mx-6 px-6 py-4 border-gray-200 dark:border-gray-800">
                     <h4 className="text-center text-xl">{props.message}</h4>
 
                     <div className="flex items-center justify-center w-full">{emojiGroup(props.initialSize || 50)}</div>
+                </div>
+            )}
+            {isFeedbackSubmitted && (
+                <div className="flex flex-col -mx-6 px-6 py-4 border-gray-200 dark:border-gray-800">
+                    <h4 className="text-center text-xl">Thanks for your feedback.</h4>
                 </div>
             )}
         </>

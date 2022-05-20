@@ -4,6 +4,7 @@
  * See License-AGPL.txt in the project root for license information.
  */
 
+//@ts-nocheck
 import { AuthProviderInfo } from "@gitpod/gitpod-protocol";
 import * as GitpodCookie from "@gitpod/gitpod-protocol/lib/util/gitpod-cookie";
 import { useContext, useEffect, useState } from "react";
@@ -22,8 +23,8 @@ import fresh from "./images/welcome/fresh.svg";
 import prebuild from "./images/welcome/prebuild.svg";
 import exclamation from "./images/exclamation.svg";
 import { getURLHash } from "./App";
-import FeedbackComponent from "./feedback-form/FeedbackComponent";
 import ErrorMessage from "./components/ErrorMessage";
+import { getExperimentsClient } from "./experiments/client";
 
 function Item(props: { icon: string; iconSize?: string; text: string }) {
     const iconSize = props.iconSize || 28;
@@ -49,7 +50,8 @@ export function hasVisitedMarketingWebsiteBefore() {
 
 export function Login() {
     const { setUser } = useContext(UserContext);
-    const { setTeams } = useContext(TeamsContext);
+    const { teams, setTeams } = useContext(TeamsContext);
+    const [isExperimentEnabled, setExperiment] = useState<boolean>(false);
 
     const urlHash = getURLHash();
     let hostFromContext: string | undefined;
@@ -83,6 +85,18 @@ export function Login() {
             setProviderFromContext(providerFromContext);
         }
     }, [authProviders]);
+
+    useEffect(() => {
+        (async () => {
+            if (teams && teams.length > 0) {
+                const isEnabled = await getExperimentsClient().getValueAsync("isMyFirstFeatureEnabled", false, {
+                    teamName: teams[0]?.name,
+                });
+                setExperiment(isEnabled);
+            }
+        })();
+    }, [teams]);
+    console.log("Is experiment enabled on Login? ", isExperimentEnabled);
 
     const authorizeSuccessful = async (payload?: string) => {
         updateUser().catch(console.error);
@@ -227,16 +241,9 @@ export function Login() {
                                     ))
                                 )}
                             </div>
-                            {errorMessage && <ErrorMessage imgSrc={exclamation} message={errorMessage} />}
+                            {true && <ErrorMessage imgSrc={exclamation} message={"hello"} />}
                         </div>
                     </div>
-                    {errorMessage && (
-                        <FeedbackComponent
-                            message={"Was this error message helpful?"}
-                            initialSize={24}
-                            isModal={false}
-                        />
-                    )}
 
                     <div className="flex-none mx-auto h-20 text-center">
                         <span className="text-gray-400">
