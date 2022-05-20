@@ -111,6 +111,7 @@ export class Installer {
     }
 
     private configureObjectStorage(slice: string) {
+        this.options.werft.log(slice, "Adding object storage configuration");
         exec(`yq w -i ${this.options.installerConfigPath} objectStorage.resources.requests.memory "256Mi"`, { slice: slice });
     }
 
@@ -187,7 +188,7 @@ export class Installer {
     }
 
     postProcessing(slice: string): void {
-        this.options.werft.log(slice, "Post processing YAML manfests");
+        this.options.werft.log(slice, "Post processing YAML manifests");
 
         this.configureLicense(slice)
         this.configureWorkspaceFeatureFlags(slice)
