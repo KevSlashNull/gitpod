@@ -86,7 +86,6 @@ export class Installer {
     }
 
     private getDevCustomValues(slice: string): void {
-        this.options.werft.log(slice, "Adding logs");
         exec(`yq r ./.werft/jobs/build/helm/values.dev.yaml components.server.blockNewUsers | yq prefix - 'blockNewUsers' > ${BLOCK_NEW_USER_CONFIG_PATH}`, { slice: slice });
         exec(`yq r ./.werft/jobs/build/helm/values.variant.cpuLimits.yaml workspaceSizing.dynamic.cpu.buckets | yq prefix - 'workspace.resources.dynamicLimits.cpu' > ${WORKSPACE_SIZE_CONFIG_PATH}`, { slice: slice });
 
@@ -95,7 +94,6 @@ export class Installer {
     }
 
     private configureContainerRegistry(slice: string): void {
-        this.options.werft.log(slice, "Adding container registry configuration");
         exec(`yq w -i ${this.options.installerConfigPath} certificate.name ${this.options.proxySecretName}`, { slice: slice });
         exec(`yq w -i ${this.options.installerConfigPath} containerRegistry.inCluster false`, { slice: slice });
         exec(`yq w -i ${this.options.installerConfigPath} containerRegistry.external.url ${CONTAINER_REGISTRY_URL}`, { slice: slice });
@@ -141,7 +139,6 @@ export class Installer {
 
             yq w -i ${this.options.installerConfigPath} authProviders[$key].kind "secret"
             yq w -i ${this.options.installerConfigPath} authProviders[$key].name "$providerId"
-
 
             kubectl create secret generic "$providerId" \
                 --namespace "${this.options.deploymentNamespace}" \

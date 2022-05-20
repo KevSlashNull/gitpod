@@ -55,7 +55,7 @@ func (v version) Defaults(in interface{}) error {
 	cfg.ContainerRegistry.InCluster = pointer.Bool(true)
 	cfg.Workspace.Resources.Requests = corev1.ResourceList{
 		corev1.ResourceCPU:    resource.MustParse("1000m"),
-		corev1.ResourceMemory: resource.MustParse("2Gi"),
+		corev1.ResourceMemory: resource.MustParse("256Mi"),
 	}
 	cfg.Workspace.Runtime.FSShiftMethod = FSShiftFuseFS
 	cfg.Workspace.Runtime.ContainerDSocket = "/run/containerd/containerd.sock"
