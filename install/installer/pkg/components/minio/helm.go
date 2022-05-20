@@ -11,6 +11,7 @@ import (
 	"github.com/gitpod-io/gitpod/installer/pkg/components/minio/azure"
 	"github.com/gitpod-io/gitpod/installer/pkg/components/minio/incluster"
 	"github.com/gitpod-io/gitpod/installer/pkg/helm"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/utils/pointer"
 )
 
@@ -26,7 +27,8 @@ var Helm = common.CompositeHelmFunc(
 		}
 
 		if cfg.Config.ObjectStorage.MemoryLimit != nil {
-			helm.KeyValue("minio.resources.requests.memory", *cfg.Config.ObjectStorage.MemoryLimit)
+			memoryLimit := resource.MustParse(*cfg.Config.ObjectStorage.MemoryLimit)
+			helm.KeyValue("minio.resources.requests.memory", memoryLimit.String())
 		}
 
 		if pointer.BoolDeref(cfg.Config.ObjectStorage.InCluster, false) {
