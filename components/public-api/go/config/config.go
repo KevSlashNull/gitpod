@@ -2,12 +2,12 @@
 // Licensed under the GNU Affero General Public License (AGPL).
 // See License-AGPL.txt in the project root for license information.
 
-package server
+package config
 
-import "net/url"
+import "github.com/gitpod-io/gitpod/common-go/baseserver"
 
-type Config struct {
-	GitpodAPI *url.URL
+type Configuration struct {
+	GitpodServiceURL string `json:"gitpodServiceUrl"`
 
-	GRPCPort int
+	Server *baseserver.Configuration `json:"server,omitempty"`
 }

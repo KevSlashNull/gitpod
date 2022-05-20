@@ -5,8 +5,8 @@ package public_api_server
 
 import (
 	"fmt"
-
 	"github.com/gitpod-io/gitpod/common-go/baseserver"
+
 	"github.com/gitpod-io/gitpod/installer/pkg/cluster"
 	"github.com/gitpod-io/gitpod/installer/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
@@ -20,6 +20,7 @@ import (
 
 const (
 	configmapVolume = "config"
+	configMountPath = "/config.json"
 )
 
 func deployment(ctx *common.RenderContext) ([]runtime.Object, error) {
@@ -60,9 +61,13 @@ func deployment(ctx *common.RenderContext) ([]runtime.Object, error) {
 						TerminationGracePeriodSeconds: pointer.Int64(30),
 						Containers: []corev1.Container{
 							{
-								Name:            Component,
-								Image:           ctx.ImageName(ctx.Config.Repository, Component, ctx.VersionManifest.Components.PublicAPIServer.Version),
-								Args:            []string{"run", "-j"},
+								Name:  Component,
+								Image: ctx.ImageName(ctx.Config.Repository, Component, ctx.VersionManifest.Components.PublicAPIServer.Version),
+								Args: []string{
+									"run",
+									fmt.Sprintf("--config=%s", configMountPath),
+									"--json-log=true",
+								},
 								ImagePullPolicy: corev1.PullIfNotPresent,
 								Resources: common.ResourceRequirements(ctx, Component, Component, corev1.ResourceRequirements{
 									Requests: corev1.ResourceList{
@@ -86,7 +91,7 @@ func deployment(ctx *common.RenderContext) ([]runtime.Object, error) {
 									ProbeHandler: corev1.ProbeHandler{
 										HTTPGet: &corev1.HTTPGetAction{
 											Path:   "/live",
-											Port:   intstr.IntOrString{IntVal: DebugContainerPort},
+											Port:   intstr.IntOrString{IntVal: baseserver.BuiltinHealthPort},
 											Scheme: corev1.URISchemeHTTP,
 										},
 									},
@@ -98,7 +103,7 @@ func deployment(ctx *common.RenderContext) ([]runtime.Object, error) {
 									ProbeHandler: corev1.ProbeHandler{
 										HTTPGet: &corev1.HTTPGetAction{
 											Path:   "/ready",
-											Port:   intstr.IntOrString{IntVal: DebugContainerPort},
+											Port:   intstr.IntOrString{IntVal: baseserver.BuiltinHealthPort},
 											Scheme: corev1.URISchemeHTTP,
 										},
 									},
@@ -110,14 +115,14 @@ func deployment(ctx *common.RenderContext) ([]runtime.Object, error) {
 									{
 										Name:      configmapVolume,
 										ReadOnly:  true,
-										MountPath: "/config.json",
+										MountPath: configMountPath,
 									},
 								},
 							},
-							*common.KubeRBACProxyContainerWithConfig(ctx, 9500, fmt.Sprintf("http://127.0.0.1:%d/", DebugContainerPort)),
+							*common.KubeRBACProxyContainerWithConfig(ctx, 9500, fmt.Sprintf("http://127.0.0.1:%d/", baseserver.BuiltinMetricsPort)),
 						},
 						Volumes: []corev1.Volume{
-							corev1.Volume{
+							{
 								Name: configmapVolume,
 								VolumeSource: corev1.VolumeSource{
 									ConfigMap: &corev1.ConfigMapVolumeSource{

@@ -6,10 +6,10 @@ package public_api_server
 
 import (
 	"fmt"
-
-	"github.com/gitpod-io/gitpod/installer/pkg/common"
+	"github.com/gitpod-io/gitpod/common-go/baseserver"
 	"github.com/gitpod-io/gitpod/public-api/config"
 
+	"github.com/gitpod-io/gitpod/installer/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,8 +18,13 @@ import (
 func configmap(ctx *common.RenderContext) ([]runtime.Object, error) {
 	cfg := config.Configuration{
 		GitpodServiceURL: fmt.Sprintf("wss://%s/api/v1", ctx.Config.Domain),
-		GRPCPort:         GRPCContainerPort,
-		PProfPort:        DebugContainerPort,
+		Server: &baseserver.Configuration{
+			Services: baseserver.ServicesConfiguration{
+				GRPC: &baseserver.ServerConfiguration{
+					Address: fmt.Sprintf(":%d", GRPCContainerPort),
+				},
+			},
+		},
 	}
 
 	fc, err := common.ToJSONString(cfg)

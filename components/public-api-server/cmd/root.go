@@ -5,7 +5,10 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"github.com/gitpod-io/gitpod/public-api/config"
 	"os"
 
 	"github.com/gitpod-io/gitpod/common-go/log"
@@ -40,14 +43,14 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&rootOpts.CfgFile, "config", "", "config file")
-	rootCmd.PersistentFlags().BoolVarP(&rootOpts.JsonLog, "json-log", "j", true, "produce JSON log output on verbose level")
-	rootCmd.PersistentFlags().BoolVarP(&rootOpts.Verbose, "verbose", "v", false, "Enable verbose JSON logging")
+	rootCmd.PersistentFlags().BoolVar(&rootOpts.JsonLog, "json-log", true, "produce JSON log output on verbose level")
+	rootCmd.PersistentFlags().BoolVar(&rootOpts.Verbose, "verbose", false, "Enable verbose JSON logging")
 }
 
 func getConfig() *config.Configuration {
 	ctnt, err := os.ReadFile(rootOpts.CfgFile)
 	if err != nil {
-		log.WithError(err).Fatal("cannot read configuration. Maybe missing --config?")
+		log.WithError(err).Fatal("Cannot read configuration. Maybe missing --config?")
 	}
 
 	var cfg config.Configuration
@@ -55,7 +58,7 @@ func getConfig() *config.Configuration {
 	dec.DisallowUnknownFields()
 	err = dec.Decode(&cfg)
 	if err != nil {
-		log.WithError(err).Fatal("cannot decode configuration. Maybe missing --config?")
+		log.WithError(err).Fatal("Cannot decode configuration. Maybe missing --config?")
 	}
 
 	return &cfg

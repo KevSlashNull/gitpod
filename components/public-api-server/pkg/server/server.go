@@ -6,12 +6,12 @@ package server
 
 import (
 	"fmt"
+	"github.com/gitpod-io/gitpod/public-api/config"
 	"net/url"
 
 	"github.com/gitpod-io/gitpod/common-go/baseserver"
 	"github.com/gitpod-io/gitpod/public-api-server/pkg/apiv1"
 	"github.com/gitpod-io/gitpod/public-api-server/pkg/proxy"
-	"github.com/gitpod-io/gitpod/public-api/config"
 	v1 "github.com/gitpod-io/gitpod/public-api/v1"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -20,15 +20,14 @@ import (
 func Start(logger *logrus.Entry, cfg *config.Configuration) error {
 	gitpodAPI, err := url.Parse(cfg.GitpodServiceURL)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to parse Gitpod API URL.")
+		return fmt.Errorf("failed to parse Gitpod API U: %w", err)
 	}
 
 	registry := prometheus.NewRegistry()
 
 	srv, err := baseserver.New("public_api_server",
 		baseserver.WithLogger(logger),
-		baseserver.WithDebugPort(cfg.PProfPort),
-		baseserver.WithGRPC(&baseserver.ServerConfiguration{Address: fmt.Sprintf(":%d", cfg.GRPCPort)}),
+		baseserver.WithConfig(cfg.Server),
 		baseserver.WithMetricsRegistry(registry),
 	)
 	if err != nil {
