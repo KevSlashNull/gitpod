@@ -133,6 +133,7 @@ export class Installer {
     // 'preview-envs-authproviders-harvester' for previews running in Harvester VMs.
     // To understand how it is generated, search for 'auth-provider-secret.yml' in the code.
     private configureAuthProviders(slice: string) {
+        this.options.werft.log(slice, "Configuring auth providers");
         exec(`for row in $(cat auth-provider-secret.yml \
         | base64 -d -w 0 \
         | yq r - authProviders -j \
@@ -143,6 +144,7 @@ export class Installer {
 
             yq w -i ${this.options.installerConfigPath} authProviders[$key].kind "secret"
             yq w -i ${this.options.installerConfigPath} authProviders[$key].name "$providerId"
+
 
             kubectl create secret generic "$providerId" \
                 --namespace "${this.options.deploymentNamespace}" \
