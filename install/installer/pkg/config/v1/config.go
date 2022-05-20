@@ -50,7 +50,7 @@ func (v version) Defaults(in interface{}) error {
 	cfg.Metadata.InstallationShortname = "default" // TODO(gpl): we're tied to "default" here because that's what we put into static bridges in the past
 	cfg.ObjectStorage.InCluster = pointer.Bool(true)
 	cfg.ObjectStorage.Resources.Requests = corev1.ResourceList{
-		corev1.ResourceMemory: resource.MustParse("2Gi"),
+		corev1.ResourceMemory: resource.MustParse("256Mi"),
 	}
 	cfg.ContainerRegistry.InCluster = pointer.Bool(true)
 	cfg.Workspace.Resources.Requests = corev1.ResourceList{
