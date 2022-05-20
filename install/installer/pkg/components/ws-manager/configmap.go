@@ -114,7 +114,7 @@ func configmap(ctx *common.RenderContext) ([]runtime.Object, error) {
 	}
 
 	installationShortNameSuffix := ""
-	if ctx.Config.Metadata.InstallationShortname != "" {
+	if ctx.Config.Metadata.InstallationShortname != "" && ctx.Config.Metadata.InstallationShortname != "default" {
 		installationShortNameSuffix = "-" + ctx.Config.Metadata.InstallationShortname
 	}
 
