@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"github.com/gitpod-io/gitpod/public-api/config"
 	"os"
+	"path"
 
 	"github.com/gitpod-io/gitpod/common-go/log"
 	"github.com/spf13/cobra"
@@ -45,7 +46,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&rootOpts.CfgFile, "config", "", "config file")
+	localConfig := path.Join(os.ExpandEnv("GOMOD"), "..", "config.json")
+	rootCmd.PersistentFlags().StringVar(&rootOpts.CfgFile, "config", localConfig, "config file")
 	rootCmd.PersistentFlags().BoolVar(&rootOpts.JsonLog, "json-log", true, "produce JSON log output on verbose level")
 	rootCmd.PersistentFlags().BoolVar(&rootOpts.Verbose, "verbose", false, "Enable verbose JSON logging")
 }

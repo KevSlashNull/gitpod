@@ -18,6 +18,8 @@ import (
 )
 
 func Start(logger *logrus.Entry, cfg *config.Configuration) error {
+	logger.WithField("config", cfg).Info("Starting public-api.")
+
 	gitpodAPI, err := url.Parse(cfg.GitpodServiceURL)
 	if err != nil {
 		return fmt.Errorf("failed to parse Gitpod API U: %w", err)
