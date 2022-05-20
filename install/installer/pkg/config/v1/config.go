@@ -152,7 +152,7 @@ type ObjectStorage struct {
 	Azure              *ObjectStorageAzure        `json:"azure,omitempty"`
 	MaximumBackupCount *int                       `json:"maximumBackupCount,omitempty"`
 	BlobQuota          *int64                     `json:"blobQuota,omitempty"`
-	MemoryLimit        *string                    `json:"memoryLimit,omitempty"`
+	Resources          *Resources                 `json:"resources,omitempty"`
 }
 
 type ObjectStorageS3 struct {

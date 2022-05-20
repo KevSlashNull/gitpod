@@ -111,7 +111,7 @@ export class Installer {
     }
 
     private configureObjectStorage(slice: string) {
-        exec(`yq w -i ${this.options.installerConfigPath} minio.resources.requests.memory "256Mi"`, { slice: slice });
+        exec(`yq w -i ${this.options.installerConfigPath} objectStorage.resources.requests.memory "256Mi"`, { slice: slice });
     }
 
     private configureIDE(slice: string) {
@@ -178,6 +178,7 @@ export class Installer {
         exec(`/tmp/installer validate cluster --kubeconfig ${this.options.kubeconfigPath} -c ${this.options.installerConfigPath} || true`, { slice: slice });
         this.options.werft.done(slice)
     }
+
 
     render(slice: string): void {
         this.options.werft.log(slice, "Rendering YAML manifests");
