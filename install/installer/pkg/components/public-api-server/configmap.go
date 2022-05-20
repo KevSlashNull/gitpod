@@ -15,6 +15,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+const (
+	configJSONFilename = "config.json"
+)
+
 func configmap(ctx *common.RenderContext) ([]runtime.Object, error) {
 	cfg := config.Configuration{
 		GitpodServiceURL: fmt.Sprintf("wss://%s/api/v1", ctx.Config.Domain),
@@ -41,7 +45,7 @@ func configmap(ctx *common.RenderContext) ([]runtime.Object, error) {
 				Labels:    common.DefaultLabels(Component),
 			},
 			Data: map[string]string{
-				"config.json": string(fc),
+				configJSONFilename: string(fc),
 			},
 		},
 	}, nil

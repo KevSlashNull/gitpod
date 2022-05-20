@@ -116,6 +116,7 @@ func deployment(ctx *common.RenderContext) ([]runtime.Object, error) {
 										Name:      configmapVolume,
 										ReadOnly:  true,
 										MountPath: configMountPath,
+										SubPath:   configJSONFilename,
 									},
 								},
 							},
