@@ -32,6 +32,9 @@ var rootOpts struct {
 var rootCmd = &cobra.Command{
 	Use:   ServiceName,
 	Short: "Serves public API services",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		log.Init(ServiceName, Version, rootOpts.JsonLog, rootOpts.Verbose)
+	},
 }
 
 func Execute() {
